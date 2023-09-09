@@ -13,5 +13,3 @@ ERROR_MESSAGES = {
     'internal_error': {'message': 'Internal server error', 'status_code': 500},
     'not_found_in_corpus': {'message': "No occurrences found in the corpus", 'status_code': 404},
 }
-
-# EXCLUDED_POS = {'CCONJ', 'SCONJ', 'PREP', 'ADP', 'DET', 'PUNCT'}
