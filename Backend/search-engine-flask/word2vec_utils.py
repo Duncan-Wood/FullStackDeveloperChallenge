@@ -49,3 +49,4 @@ def find_most_similar_words(
     except KeyError as exc:
         logging.error("Key error while finding similar words: %s", exc)
         raise KeyError("Word not found in custom vocabulary") from exc
+    

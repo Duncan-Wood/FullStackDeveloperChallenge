@@ -78,75 +78,12 @@ def save_corpus(file_path, new_word_list, encoding='utf-8'):
     except FileNotFoundError as exc:
         raise exc
 
-
-# Load the pre-trained Word2Vec model
-word2vec_model = KeyedVectors.load_word2vec_format('/Users/duncanwood/Desktop/GoogleNews-vectors-negative300.bin', binary=True)
-
 # Load the initial word list from the corpus file
 word_list = load_corpus(CORPUS_FILE_PATH)
 
 # Load the custom vocabulary from the pickle file
 with open('vocabulary.pkl', 'rb') as vocab_file:
     custom_vocab = pickle.load(vocab_file)
-# # Create a set of words found in the Word2Vec model
-# model_vocabulary_filtered = set(word2vec_model.index_to_key).intersection(word_list)
-
-# Load the custom vocabulary from the pickle file
-with open('vocabulary.pkl', 'rb') as vocab_file:
-    custom_vocab = pickle.load(vocab_file)
-# # Create a set of words found in the Word2Vec model
-# model_vocabulary_filtered = set(word2vec_model.index_to_key).intersection(word_list)
-
-# Create a set of words found in the Word2Vec model'
-model_vocabulary_filtered = set(word2vec_model.index_to_key).intersection(word_list)
-
-# Create a set of words found in the corpus but not in the Word2Vec model
-def find_most_similar_words(query_word, word2vec_model, word_list, num_results=3, similarity_threshold=0):
-    try:
-        # Find similar words with a lower similarity threshold
-        similar_words = [word for word, score in word2vec_model.most_similar(query_word, topn=num_results * 10) if score >= similarity_threshold]
-
-        # If there are not enough similar words meeting the threshold, add words from the word_list
-        if len(similar_words) < num_results:
-            remaining = num_results - len(similar_words)
-            for word in word_list:
-                if word not in similar_words:
-                    similar_words.append(word)
-                    remaining -= 1
-                    if remaining == 0:
-                        break
-
-        # If still not enough words, fill the result with additional words from the corpus
-        if len(similar_words) < num_results:
-            remaining = num_results - len(similar_words)
-            for word in word_list:
-                if word not in similar_words:
-                    similar_words.append(word)
-                    remaining -= 1
-                    if remaining == 0:
-                        break
-
-        # Return the top num_results words with the highest similarity scores, limited to word_list
-        filtered_similar_words = similar_words[:num_results]
-
-        return {"query_word": query_word, "similar_words": filtered_similar_words} 
-    except KeyError as exc:
-        logging.error("Key error while finding similar words: %s", exc)
-        raise KeyError("Word not found in model") from exc
-
-@app.route('/similar-words', methods=['GET'])
-def get_similar_words():
-    query_word = request.args.get('w')
-
-    # Validate the input query word
-    error = validate_input_string(query_word, 'query_word')
-    if error:
-        return handle_error('invalid_input')
-
-    similar_words = find_most_similar_words(query_word, word2vec_model, word_list)
-
-    # Return the results as JSON
-    return jsonify({"query_word": query_word, "similar_words": similar_words})
 
 # Define a reusable input validation function
 def validate_input_string(input_value, field_name):
