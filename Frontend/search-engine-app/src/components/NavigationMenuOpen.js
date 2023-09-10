@@ -36,65 +36,97 @@ const NavigationMenuOpen = ({ onClose }) => {
     return shuffled;
   };
 
-  // Function to highlight query words in text from results
-  const highlightQueryWord = (text) => {
-    const { query } = state;
-    const queryParts = query.toLowerCase().split(" ");
-    const segments = [];
-    let currentIndex = 0;
+// Function to highlight query words in text from results
+const highlightQueryWord = (text) => {
+  const { query } = state;
+  const queryRegExp = new RegExp(`(${query.split(" ").map(escapeRegExp).join("|")})`, "gi");
 
-    while (currentIndex < text.length) {
-      // Find the start index of the first query word occurrence
-      const startIdx = text.toLowerCase().indexOf(queryParts[0], currentIndex);
-      if (startIdx === -1) {
-        // If no more occurrences found, add the remaining text and exit
-        segments.push(text.slice(currentIndex));
-        break;
-      }
-
-      // Add text before the query word
-      segments.push(text.slice(currentIndex, startIdx));
-      currentIndex = startIdx;
-
-      for (const part of queryParts) {
-        if (text.toLowerCase().startsWith(part, currentIndex)) {
-          // Highlight the query word with a <strong> element
-          segments.push(
-            <strong key={currentIndex}>
-              {text.slice(currentIndex, currentIndex + part.length)}
-            </strong>
-          );
-          currentIndex += part.length;
-        } else {
-          // Add non-query word text
-          segments.push(text[currentIndex]);
-          currentIndex += 1;
-        }
-      }
+  return text.split(queryRegExp).map((part, index) => {
+    if (queryRegExp.test(part)) {
+      return (
+        <strong key={index}>
+          {part}
+        </strong>
+      );
     }
+    return part;
+  });
+};
 
-    return segments;
-  };
+// Function to escape special characters in a string for regex
+const escapeRegExp = (str) => {
+  return str.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+};
 
-  // Function to fetch search results from the server
+
   const fetchSearchResults = useCallback(async () => {
     try {
-      const response = await axios.get(
+      console.log('Fetching matching sentences...');
+      const responseMatching = await axios.get(
         `${API_BASE_URL}/find_matching_sentences?input=${state.query}`
       );
-      const matchingSentences = response.data.matching_sentences;
-
-      const randomized = shuffleArray(matchingSentences);
-
-      // Update component state with results and set the search flag using functional update form
-      setState((prevState) => ({
-        ...prevState,
-        results: randomized,
-        resultCount: randomized.length,
-        error: "",
-        hasSearched: true,
-      }));
+      const matchingSentences = responseMatching.data.matching_sentences;
+  
+      console.log('Matching Sentences:', matchingSentences);
+  
+      if (matchingSentences.length >= 3) {
+        // If we have at least three matching sentences, prioritize and shuffle them
+        const randomized = shuffleArray(matchingSentences.slice(0, 3));
+        setState((prevState) => ({
+          ...prevState,
+          results: randomized,
+          resultCount: 3,
+          error: "",
+          hasSearched: true,
+        }));
+      } else {
+        console.log('Fetching similar words...');
+        // Fetch similar words
+        const similarWordsResponse = await axios.get(
+          `${API_BASE_URL}/similar_words?w=${state.query}`
+        );
+  
+        console.log(state.query);
+  
+        const similarWordsData = similarWordsResponse.data.similar_words.similar_words;
+  
+        if (Array.isArray(similarWordsData) && similarWordsData.length > 0) {
+          // If we have similar words, fetch matching sentences for them
+          console.log('Fetching similar sentences...');
+          const similarWords = similarWordsData.slice(0, 3);
+          const similarWordsString = similarWords.join(',');
+          const sentencesResponse = await axios.get(
+            `${API_BASE_URL}/find_similar_sentences?similar_words=${similarWordsString}`
+          );
+          const similarSentences = sentencesResponse.data.matching_sentences;
+  
+          console.log('Similar Sentences:', similarSentences);
+  
+          // Combine matching sentences and similar sentences, shuffle and select first three
+          const combinedSentences = [...matchingSentences, ...similarSentences];
+          const randomized = shuffleArray(combinedSentences.slice(0, 3));
+  
+          setState((prevState) => ({
+            ...prevState,
+            results: randomized,
+            resultCount: 3,
+            error: "",
+            hasSearched: true,
+          }));
+        } else {
+          // If there are no similar words, show an error message
+          console.log('No similar words found.');
+          setState((prevState) => ({
+            ...prevState,
+            results: [],
+            resultCount: 0,
+            error: "No matching or similar sentences found.",
+            hasSearched: true,
+          }));
+        }
+      }
     } catch (error) {
+      console.error('Error fetching data:', error);
       handleSearchError(error);
     }
   }, [state.query]);

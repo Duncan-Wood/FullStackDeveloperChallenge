@@ -81,6 +81,36 @@ word_list = load_corpus(CORPUS_FILE_PATH)
 with open('vocabulary.pkl', 'rb') as vocab_file:
     custom_vocab = pickle.load(vocab_file)
 
+# Common function to find matching sentences for a word
+def find_matching_sentences_for_word(input_word):
+    """This is a common function to find matching sentences for a word"""
+    try:
+        # Validate input_word using the input validation function
+        validation_error = validate_input_string(input_word, 'input word')
+        if validation_error:
+            raise ValueError(validation_error)
+
+        with open(CORPUS_FILE_PATH, 'r', encoding='utf-8') as file:
+            hemingway = file.read()
+
+        sentences = re.split(r'(?<=[.!?])\s+', hemingway)
+        matching_sentences = []
+
+        for sentence in sentences:
+            if re.search(rf'\b{input_word}\b', sentence, re.IGNORECASE):
+                match_index = sentence.lower().index(input_word.lower())
+                context_start = max(match_index - CONTEXT_SIZE, 0)
+                context_end = min(match_index + len(input_word) + CONTEXT_SIZE, len(sentence))
+                context = sentence[context_start:context_end]
+                context = context.replace("\n", " ").strip()
+                matching_sentences.append({"context": context})
+
+        return matching_sentences
+
+    except Exception as exc: # pylint: disable=W0718
+        logging.warning("Error processing request: %s", exc)
+        return []
+
 # Define a reusable input validation function
 def validate_input_string(input_value, field_name):
     """
@@ -115,7 +145,8 @@ def hello():
     <h1>Welcome to the Search Engine API</h1>
     <p>This API provides the following endpoints:</p>
     <ul>
-        <li><a href="/similar-words?w=word">/similar-words?w=word</a> - Find similar words</li>
+        <li><a href="/similar_words?w=word">/similar-words?w=word</a> - Find similar words</li>
+        <li><a href="/find_similar_sentences?similar_words=word1,word2,word3">/find_similar_sentences?similar_words=word1,word2,word3</a> - Find similar sentences</li>
         <li><a href="/find_matching_sentences?input=word">/find_matching_sentences?input=word</a> - Find sentences containing a word</li>
         <li><a href="/add_word" target="_blank">/add_word</a> - Add a new word to the search corpus</li>
         <li><a href="/remove_similar_word?word=target_word">/remove_similar_word?word=target_word</a> - Remove the most similar word to a target word</li>
@@ -125,23 +156,49 @@ def hello():
     """
 
 # Route to find similar words
-@app.route('/similar-words', methods=['GET'])
+@app.route('/similar_words', methods=['GET'])
 def get_similar_words():
     """Find similar words to a query word."""
-    query_word = request.args.get('w')
+    try:
+        query_word = request.args.get('w')
 
-    # Validate the input query word
-    error = validate_input_string(query_word, 'query_word')
-    if error:
-        return handle_error('invalid_input')
+        # Validate the input query word
+        error = validate_input_string(query_word, 'query_word')
+        if error:
+            return handle_error('invalid_input')
 
-    # Use your custom similarity calculation logic with the custom vocabulary
-    similar_words = find_most_similar_words(query_word, custom_vocab, word_list)
+        # Use your custom similarity calculation logic with the custom vocabulary
+        similar_words = find_most_similar_words(query_word, custom_vocab, word_list)
 
-    # Return the results as JSON
-    return jsonify({"query_word": query_word, "similar_words": similar_words})
+        # Return the results as JSON
+        return jsonify({"query_word": query_word, "similar_words": similar_words})
+    except Exception as exc: # pylint: disable=W0718
+        logging.warning("Error processing request: %s", exc)
+        return handle_error('internal_error')
 
-# Route to find sentences containing a word
+# route to find similar sentences
+@app.route('/find_similar_sentences', methods=['GET'])
+def find_similar_sentences():
+    """ This function finds similar sentences for a list of similar words"""
+    try:
+        # Get up to 3 similar words from '/similar-words'
+        similar_words = request.args.get('similar_words')
+        similar_words = similar_words.split(',')[:3]
+
+        # Initialize a list to store matching sentences for similar words
+        matching_sentences = []
+
+        # Loop through each similar word and find matching sentences
+        for word in similar_words:
+            matching_sentences.extend(find_matching_sentences_for_word(word))
+
+        return jsonify({"matching_sentences": matching_sentences})
+
+    except Exception as exc: # pylint: disable=W0718
+        logging.warning("Error processing request: %s", exc)
+        return handle_error('internal_error')
+
+# Define the route to find matching sentences for a single word
 @app.route('/find_matching_sentences', methods=['GET'])
 def find_matching_sentences():
     """
@@ -152,26 +209,7 @@ def find_matching_sentences():
     input_word = request.args.get('input')
 
     try:
-        # Validate input_word using the input validation function
-        validation_error = validate_input_string(input_word, 'input word')
-        if validation_error:
-            raise ValueError(validation_error)
-
-        with open(CORPUS_FILE_PATH, 'r', encoding='utf-8') as file:
-            hemingway = file.read()
-
-        sentences = re.split(r'(?<=[.!?])\s+', hemingway)
-        matching_sentences = []
-
-        for sentence in sentences:
-            if re.search(rf'\b{input_word}\b', sentence, re.IGNORECASE):
-                match_index = sentence.lower().index(input_word.lower())
-                context_start = max(match_index - CONTEXT_SIZE, 0)
-                context_end = min(match_index + len(input_word) + CONTEXT_SIZE, len(sentence))
-                context = sentence[context_start:context_end]
-                context = context.replace("\n", " ").strip()
-                matching_sentences.append({"context": context})
-
+        matching_sentences = find_matching_sentences_for_word(input_word)
         return jsonify({"matching_sentences": matching_sentences})
 
     except Exception as exc: # pylint: disable=W0718
