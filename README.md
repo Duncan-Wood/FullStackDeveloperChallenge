@@ -104,7 +104,7 @@ This will automatically open the app in your default web browser. Alternatively,
 
 
 ## Known Issues
-
+- Currently, the similar word only works if at least one instance of the searched word is found in the corpus. This should be an easy fix when I can update my pkl file.
 - When similar sentances are returned in the results, the correlating similar word is not highlighted, only the matching word.
 - Currently, the API does not interact with the actual pdf. In the future, I would like to add the ability to see results in the pdf, and directly alter the pdf when CRUD is used. 
 
