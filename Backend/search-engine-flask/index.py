@@ -4,14 +4,10 @@
 import re
 import logging
 import pickle
-import spacy
 from flask import Flask, jsonify, request
 from flask_cors import CORS
 from .word2vec_utils import find_most_similar_words
 from .config import CORPUS_FILE_PATH, CONTEXT_SIZE, ERROR_MESSAGES
-
-# Load spaCy model with word vectors
-nlp = spacy.load("en_core_web_md")
 
 # Create a Flask app and enable CORS
 app = Flask(__name__)

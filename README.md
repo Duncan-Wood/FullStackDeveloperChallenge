@@ -40,7 +40,6 @@ Install the required dependencies for the backend API:
 
 ```
 pip install -r requirements.txt
-python -m spacy download en_core_web_md
 ```
 
 **Run the API**
@@ -99,9 +98,10 @@ This will automatically open the app in your default web browser. Alternatively,
 
 - Flask: A lightweight web framework for building APIs.
 - Flask-Cors: Enables Cross-Origin Resource Sharing (CORS) support in Flask applications.
-- Spacy: Industrial-strength natural language processing in Python.
+- Gensim: A Python library for topic modelling, document indexing and similarity retrieval with large corpora.
+- Word2Vec: A pre-trained model for generating word embeddings.
 - NumPy: A fundamental package for scientific computing with Python.
-- en_core_web_md: A pre-trained English model essential for enabling accurate natural language processing functionalities within the application.
+
 
 ## Known Issues
 
@@ -114,7 +114,6 @@ This will automatically open the app in your default web browser. Alternatively,
 - [ChatGPT](https://chat.openai.com/)
 - [PSPDFKit](https://pspdfkit.com/) (watermark can be removed with purchase)
 - [Stack Overflow](https://stackoverflow.com/)
-- [Spacy](https://spacy.io/)
-- [en-core-web-md](https://spacy.io/models/en)
+- [Word2Vec](https://radimrehurek.com/gensim/models/word2vec.html)
 - [Flask](https://flask.palletsprojects.com/en/1.1.x/)
 - [NumPy](https://numpy.org/)
