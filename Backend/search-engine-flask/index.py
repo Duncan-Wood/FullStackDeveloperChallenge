@@ -3,10 +3,11 @@
 
 import re
 import logging
+import pickle
 import spacy
 from flask import Flask, jsonify, request
 from flask_cors import CORS
-from gensim.models import KeyedVectors
+from .word2vec_utils import find_most_similar_words
 from .config import CORPUS_FILE_PATH, CONTEXT_SIZE, ERROR_MESSAGES
 
 # Load spaCy model with word vectors
@@ -83,6 +84,18 @@ word2vec_model = KeyedVectors.load_word2vec_format('/Users/duncanwood/Desktop/Go
 
 # Load the initial word list from the corpus file
 word_list = load_corpus(CORPUS_FILE_PATH)
+
+# Load the custom vocabulary from the pickle file
+with open('vocabulary.pkl', 'rb') as vocab_file:
+    custom_vocab = pickle.load(vocab_file)
+# # Create a set of words found in the Word2Vec model
+# model_vocabulary_filtered = set(word2vec_model.index_to_key).intersection(word_list)
+
+# Load the custom vocabulary from the pickle file
+with open('vocabulary.pkl', 'rb') as vocab_file:
+    custom_vocab = pickle.load(vocab_file)
+# # Create a set of words found in the Word2Vec model
+# model_vocabulary_filtered = set(word2vec_model.index_to_key).intersection(word_list)
 
 # Create a set of words found in the Word2Vec model'
 model_vocabulary_filtered = set(word2vec_model.index_to_key).intersection(word_list)
@@ -178,6 +191,22 @@ def hello():
     </ul>
     """
 
+# Route to find similar words
+@app.route('/similar-words', methods=['GET'])
+def get_similar_words():
+    """Find similar words to a query word."""
+    query_word = request.args.get('w')
+
+    # Validate the input query word
+    error = validate_input_string(query_word, 'query_word')
+    if error:
+        return handle_error('invalid_input')
+
+    # Use your custom similarity calculation logic with the custom vocabulary
+    similar_words = find_most_similar_words(query_word, custom_vocab, word_list)
+
+    # Return the results as JSON
+    return jsonify({"query_word": query_word, "similar_words": similar_words})
 
 # Route to find sentences containing a word
 @app.route('/find_matching_sentences', methods=['GET'])
