@@ -2,6 +2,7 @@ import React, { useEffect, useRef, useCallback } from "react";
 
 // PdfViewerComponent is a React component for rendering a PDF viewer using PSPDFKit.
 // It dynamically loads PSPDFKit when mounted and unloads it when unmounted.
+// using a Ref is a way to manipulate the DOM directly and avoid React's rerendering
 export default function PdfViewerComponent(props) {
   // Create a reference to the container div where PSPDFKit will be rendered.
   const containerRef = useRef(null);

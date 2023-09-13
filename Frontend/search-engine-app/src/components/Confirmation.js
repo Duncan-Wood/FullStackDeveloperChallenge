@@ -1,4 +1,5 @@
-import React from "react";
+
+// streamlined confirmation menu for replacing and deleting words
 
 const Confirmation = ({
   isReplaceCompleted,

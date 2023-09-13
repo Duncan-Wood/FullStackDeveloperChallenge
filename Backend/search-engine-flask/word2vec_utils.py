@@ -3,7 +3,7 @@
 import logging
 import numpy as np
 
-
+# Cosine similarity is used with the Word2Vec PKL file to find similar words
 def cosine_similarity(vec1, vec2):
     """Calculate the cosine similarity between two vectors."""
     dot_product = np.dot(vec1, vec2)

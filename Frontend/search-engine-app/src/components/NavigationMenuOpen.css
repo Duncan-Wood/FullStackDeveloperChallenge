@@ -1,4 +1,5 @@
 /* NavigationMenuOpen.css */
+/* Used the figma plugin and other tools to get the app to look extremely close to the example */
 
 .menu.menu-open {
   transform: translateX(0);

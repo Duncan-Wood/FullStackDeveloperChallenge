@@ -9,6 +9,7 @@ const NavigationMenuClosed = ({ onClick }) => {
       <nav className="nav-open" onClick={onClick}>
         <div className="menu-icon">
           {/* Displaying a menu icon image */}
+          {/* Assets taken from the example */}
           <img src={require("../assets/menu.png")} alt="Menu Icon" />
         </div>
         <div className="menu-text">Menu</div>

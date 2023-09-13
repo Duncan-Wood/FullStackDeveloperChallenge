@@ -108,6 +108,16 @@ This will automatically open the app in your default web browser. Alternatively,
 - When similar sentances are returned in the results, the correlating similar word is not highlighted, only the matching word.
 - Currently, the API does not interact with the actual pdf. In the future, I would like to add the ability to see results in the pdf, and directly alter the pdf when CRUD is used. 
 
+## Future Improvements
+- Add the ability to see results in the pdf, and directly alter the pdf when CRUD is used.
+- Improve robustness of similarity search.
+- Add tests
+
+## Notes
+- The pspdfkit watermark can be removed with purchase.
+- The hemingway-clean file is used to restore the corpus to its original state. This is useful if you want to start over with a new corpus.
+- The pdf file is used for PSDFKit and is not used by the API.
+
 ## Sources
 
 - [ChatGPT](https://chat.openai.com/)

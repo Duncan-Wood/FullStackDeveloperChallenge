@@ -12,6 +12,7 @@ const SearchResults = ({ results, resultCount, error, hasSearched, onReplace, on
 
         <div className="results-output">
           {error && <p>{error}</p>}
+          {/* in the future,  I will adapt this to work with the similar search results as well */}
           {results.slice(0, 3).map((result, index) => (
             <div key={index}>
               {highlightQueryWord(`...${result.context}...`)}

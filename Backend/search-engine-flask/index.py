@@ -1,13 +1,13 @@
 # ./index.py
 """Search Engine API"""
 
-import re
-import logging
-import pickle
-from flask import Flask, jsonify, request
-from flask_cors import CORS
-from .word2vec_utils import find_most_similar_words
-from .config import CORPUS_FILE_PATH, CONTEXT_SIZE, ERROR_MESSAGES
+import re # used for regular expressions
+import logging # used to log errors
+import pickle # used to load the custom vocabulary
+from flask import Flask, jsonify, request # used to create the API
+from flask_cors import CORS # used to enable Cross-Origin Resource Sharing
+from .word2vec_utils import find_most_similar_words # used to find similar words
+from .config import CORPUS_FILE_PATH, CONTEXT_SIZE, ERROR_MESSAGES # used to load the corpus file path, context size, and error messages
 
 # Create a Flask app and enable CORS
 app = Flask(__name__)
@@ -18,11 +18,11 @@ def file_operation(file_path, operation, data=None, encoding='utf-8'):
     """
     Helper function for file operations.
 
-    :param file_path: The path to the file.
-    :param operation: The operation to perform ('read' or 'write').
-    :param data: Data to write to the file (only used for 'write' operation).
-    :param encoding: The encoding for file operations.
-    :return: Success message or error message.
+    file_path: The path to the file.
+    operation: The operation to perform ('read' or 'write').
+    data: Data to write to the file (only used for 'write' operation).
+    encoding: The encoding for file operations.
+    return: Success message or error message.
     """
     try:
         if operation == 'read':
@@ -45,8 +45,8 @@ def load_corpus(file_path):
     """
     Load the corpus from a text file.
 
-    :param file_path: The path to the corpus file.
-    :return: List of words from the corpus.
+    file_path: The path to the corpus file.
+    return: List of words from the corpus.
     """
     try:
         corpus_text = file_operation(file_path, 'read')
@@ -63,10 +63,10 @@ def save_corpus(file_path, new_word_list, encoding='utf-8'):
     """
     Save the corpus to a text file.
 
-    :param file_path: The path to the corpus file.
-    :param new_word_list: List of words to save to the file.
-    :param encoding: The encoding for file operations.
-    :return: The saved word list.
+    file_path: The path to the corpus file.
+    new_word_list: List of words to save to the file.
+    encoding: The encoding for file operations.
+    return: The saved word list.
     """
     try:
         file_operation(file_path, 'write', ' '.join(new_word_list), encoding=encoding)
@@ -116,9 +116,9 @@ def validate_input_string(input_value, field_name):
     """
     Validate that an input value is a non-empty string.
 
-    :param input_value: The input value to validate.
-    :param field_name: The name of the input field (for error messages).
-    :return: None if input is valid, error message if not.
+    input_value: The input value to validate.
+    field_name: The name of the input field (for error messages).
+    return: None if input is valid, error message if not.
     """
     if not input_value or not isinstance(input_value, str) or not input_value.strip():
         return f"Invalid or missing {field_name}"
@@ -133,7 +133,7 @@ def handle_error(error_type):
     error_info = ERROR_MESSAGES.get(error_type, ERROR_MESSAGES['internal_error'])
     return jsonify({"error": error_info['message']}), error_info['status_code']
 
-# Define the Flask routes
+# Flask routes
 
 # Route for a friendly greeting
 @app.route('/')

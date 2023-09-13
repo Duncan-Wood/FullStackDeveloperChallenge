@@ -1,3 +1,5 @@
+// This component is used for displaying search results and actions
+
 import { useState, useCallback } from "react";
 import PropTypes from "prop-types";
 import axios from "axios";
@@ -11,10 +13,12 @@ const API_BASE_URL = "http://localhost:5000";
 
 // NavigationMenuOpen component for displaying search results and actions
 const NavigationMenuOpen = ({ onClose }) => {
-  // Component state using useState hook
+  // managing multiple state variables like this allows me to update them
+  // individually without naming each one when updating
   const [state, setState] = useState({
     query: "", // The search query.
     results: [], // The search results.
+    // will create a similarResults array to store similar words eventually
     resultCount: 0, // The number of results.
     error: "", // The error message.
     showResultsSection: true, // Flag to show/hide results section.
@@ -27,6 +31,7 @@ const NavigationMenuOpen = ({ onClose }) => {
   });
 
   // Function to shuffle results array
+  // this is an unnecessary function, but it's a way to show a diverse range of results
   const shuffleArray = (array) => {
     const shuffled = array.slice();
     for (let i = shuffled.length - 1; i > 0; i--) {
@@ -37,6 +42,7 @@ const NavigationMenuOpen = ({ onClose }) => {
   };
 
 // Function to highlight query words in text from results
+// will eventually be used to highlight similar words by adding a similarResults array
 const highlightQueryWord = (text) => {
   const { query } = state;
   const queryRegExp = new RegExp(`(${query.split(" ").map(escapeRegExp).join("|")})`, "gi");
@@ -55,19 +61,18 @@ const highlightQueryWord = (text) => {
 
 // Function to escape special characters in a string for regex
 const escapeRegExp = (str) => {
+  // this is used to make the query case insensitive and ignore special characters
   return str.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
 };
 
 
   const fetchSearchResults = useCallback(async () => {
+    // useCallback is used to prevent the function from being recreated on every render
     try {
-      console.log('Fetching matching sentences...');
       const responseMatching = await axios.get(
         `${API_BASE_URL}/find_matching_sentences?input=${state.query}`
       );
       const matchingSentences = responseMatching.data.matching_sentences;
-  
-      console.log('Matching Sentences:', matchingSentences);
   
       if (matchingSentences.length >= 3) {
         // If we have at least three matching sentences, prioritize and shuffle them
@@ -80,28 +85,22 @@ const escapeRegExp = (str) => {
           hasSearched: true,
         }));
       } else {
-        console.log('Fetching similar words...');
         // Fetch similar words
         const similarWordsResponse = await axios.get(
           `${API_BASE_URL}/similar_words?w=${state.query}`
         );
   
-        console.log(state.query);
-  
         const similarWordsData = similarWordsResponse.data.similar_words.similar_words;
   
         if (Array.isArray(similarWordsData) && similarWordsData.length > 0) {
           // If we have similar words, fetch matching sentences for them
-          console.log('Fetching similar sentences...');
           const similarWords = similarWordsData.slice(0, 3);
           const similarWordsString = similarWords.join(',');
           const sentencesResponse = await axios.get(
             `${API_BASE_URL}/find_similar_sentences?similar_words=${similarWordsString}`
           );
           const similarSentences = sentencesResponse.data.matching_sentences;
-  
-          console.log('Similar Sentences:', similarSentences);
-  
+    
           // Combine matching sentences and similar sentences, shuffle and select first three
           const combinedSentences = [...matchingSentences, ...similarSentences];
           const randomized = shuffleArray(combinedSentences.slice(0, 3));

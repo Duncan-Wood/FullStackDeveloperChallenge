@@ -1,6 +1,8 @@
 """ Helper functions for corpus operations. """
 import logging
 import re
+# will continue to develop this to include more file operations 
+# that are currently in other files
 
 # Helper function for file operations
 def file_operation(file_path, operation, data=None, encoding='utf-8'):
